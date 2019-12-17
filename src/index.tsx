@@ -37,6 +37,8 @@ interface StyleCache {
   [key: number]: ItemStyle;
 }
 
+const relative: 'relative' = 'relative';
+
 export function SnappyReactGrid({
   items,
   component: RenderComponent,
@@ -117,8 +119,13 @@ export function SnappyReactGrid({
 
   const containerStyle =
     itemHeight === null
-      ? {}
+      ? {
+          position: relative,
+          marginTop: 120,
+        }
       : {
+          position: relative,
+          marginTop: 120,
           height: (items.length * itemHeight) / columns,
         };
 
