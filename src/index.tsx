@@ -11,7 +11,6 @@ import useResizeObserver from 'use-resize-observer';
 import supportsPassive from './utils/supportsPassive';
 
 interface ItemRendererProps {
-  index: number;
   item: any;
   style: ItemStyle | {};
   innerRef: MutableRefObject<null> | null;
@@ -37,7 +36,34 @@ interface StyleCache {
   [key: number]: ItemStyle;
 }
 
-const relative: 'relative' = 'relative';
+interface StylesForItem {
+  index: number;
+  cache: StyleCache;
+  row: number;
+  column: number;
+  columns: number;
+  itemHeight: number | null;
+}
+
+function stylesForItem({
+  index,
+  cache,
+  row,
+  column,
+  columns,
+  itemHeight,
+}: StylesForItem) {
+  if (itemHeight) {
+    cache[index] = cache[index] || {
+      position: 'absolute',
+      left: `${column * (100 / columns)}%`,
+      top: `${row * itemHeight}px`,
+      width: 100 / columns + '%',
+    };
+  }
+
+  return cache[index];
+}
 
 export function SnappyReactGrid({
   items,
@@ -93,7 +119,7 @@ export function SnappyReactGrid({
       setItemsVisible(visibleRows * columns);
       setItemsOffset(offsetRows * columns);
     }
-  }, [itemHeight, containerWidth, containerHeight, columns]);
+  }, [itemHeight, containerWidth, containerHeight, columns, overscanRows]);
 
   useLayoutEffect(() => {
     styleCache.current = {};
@@ -112,53 +138,51 @@ export function SnappyReactGrid({
       );
   }, [updateItemVisibility]);
 
-  const itemsToRender = useMemo(
-    () => items.slice(itemsOffset, itemsOffset + itemsVisible),
-    [items, itemsOffset, itemsVisible]
-  );
+  const styles = useRef<StyleCache>({});
+
+  const itemsToRender = useMemo(() => {
+    let out = [];
+    let endIndex = Math.min(itemsOffset + itemsVisible, items.length);
+
+    for (let index = itemsOffset; index < endIndex; index++) {
+      const item = items[index];
+
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+
+      out.push(
+        <RenderComponent
+          key={index}
+          item={item}
+          style={stylesForItem({
+            index,
+            cache: styles.current,
+            row,
+            column,
+            columns,
+            itemHeight,
+          })}
+          innerRef={index === 0 ? itemRef : null}
+        />
+      );
+    }
+
+    return out;
+  }, [items, itemsOffset, itemsVisible, itemHeight, columns]);
 
   const containerStyle =
     itemHeight === null
       ? {
-          position: relative,
-          marginTop: 120,
+          position: 'relative' as 'relative',
         }
       : {
-          position: relative,
-          marginTop: 120,
+          position: 'relative' as 'relative',
           height: (items.length * itemHeight) / columns,
         };
 
-  const styles = useMemo(() => {
-    return itemsToRender.map(item => {
-      const row = Math.floor(item / columns);
-      const column = item % columns;
-
-      if (itemHeight) {
-        styleCache.current[item] = styleCache.current[item] || {
-          position: 'absolute',
-          left: `${column * (100 / columns)}%`,
-          top: `${row * itemHeight}px`,
-          width: 100 / columns + '%',
-        };
-
-        return styleCache.current[item];
-      }
-
-      return {};
-    });
-  }, [itemsToRender, columns, itemHeight]);
-
   return (
     <div className={className} style={containerStyle} ref={containerRef}>
-      {itemsToRender.map((item, index) => (
-        <RenderComponent
-          index={index}
-          item={item}
-          style={styles[index]}
-          innerRef={index === 0 ? itemRef : null}
-        />
-      ))}
+      {itemsToRender}
     </div>
   );
 }

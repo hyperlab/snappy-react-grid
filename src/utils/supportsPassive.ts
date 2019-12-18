@@ -4,6 +4,7 @@ try {
   let opts = Object.defineProperty({}, 'passive', {
     get: function() {
       supportsPassive = true;
+      return true;
     },
   });
   const noop = () => null;
