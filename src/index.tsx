@@ -10,25 +10,35 @@ import React, {
 import useResizeObserver from 'use-resize-observer';
 import supportsPassive from './utils/supportsPassive';
 
-interface ItemRendererProps {
+export interface RenderComponentProps {
   item: any;
   style: ItemStyle | {};
   innerRef: MutableRefObject<null> | null;
 }
 
+interface ScrollHandlerArgs {
+  firstVisibleIndex: number | null;
+  lastVisibleIndex: number | null;
+}
+
 interface SnappyReactGridProps {
   items: any[];
-  component: ComponentType<ItemRendererProps>;
+  component: ComponentType<RenderComponentProps>;
   overscanRows?: number;
   columns?: number;
   defaultVisible?: number;
+  defaultOffset?: number;
   className?: string;
+  onScroll?: ({
+    firstVisibleIndex,
+    lastVisibleIndex,
+  }: ScrollHandlerArgs) => void;
 }
 
 interface ItemStyle {
-  position: string;
-  left: string;
-  top: string;
+  position?: string;
+  left?: string;
+  top?: string;
   width: string;
 }
 
@@ -60,23 +70,29 @@ function stylesForItem({
       top: `${row * itemHeight}px`,
       width: 100 / columns + '%',
     };
+  } else {
+    cache[index] = { width: 100 / columns + '%' };
   }
 
   return cache[index];
 }
 
+let lastKnownHeight: number | null = null;
+
 export function SnappyReactGrid({
   items,
   component: RenderComponent,
   defaultVisible = 16,
+  defaultOffset = 0,
   columns = 4,
   overscanRows = 3,
   className,
+  onScroll,
 }: SnappyReactGridProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemRef = useRef(null);
   const [itemsVisible, setItemsVisible] = useState(defaultVisible);
-  const [itemsOffset, setItemsOffset] = useState(0);
+  const [itemsOffset, setItemsOffset] = useState(defaultOffset);
 
   const { width: containerWidth, height: containerHeight } = useResizeObserver({
     ref: containerRef,
@@ -85,9 +101,8 @@ export function SnappyReactGrid({
     ref: itemRef,
   });
 
-  const lastKnownHeight = useRef<null | number>(null);
-  if (currentItemHeight > 1) lastKnownHeight.current = currentItemHeight;
-  const itemHeight = lastKnownHeight.current;
+  if (currentItemHeight > 1) lastKnownHeight = currentItemHeight;
+  const itemHeight = lastKnownHeight;
 
   const styleCache = useRef<StyleCache>({});
 
@@ -99,46 +114,65 @@ export function SnappyReactGrid({
       containerRef.current
     ) {
       const fullHeight = window.innerHeight;
-      const scrollOffset = window.pageYOffset;
-
       const { top } = containerRef.current.getBoundingClientRect();
-      const aboveContainer = Math.max(top - scrollOffset, 0);
 
-      const firstVisibleRow = Math.ceil(
-        (scrollOffset - aboveContainer) / itemHeight
-      );
+      const firstVisibleRow = Math.floor(Math.max(-top, 0) / itemHeight);
       const offsetRows = Math.max(0, firstVisibleRow - overscanRows);
 
       const overscanRowsBefore = Math.min(overscanRows, firstVisibleRow);
 
-      const visibleRows =
-        Math.ceil((fullHeight - aboveContainer) / itemHeight) +
-        overscanRowsBefore +
-        overscanRows;
+      const rowsInView = Math.ceil(
+        (fullHeight - Math.max(top, 0)) / itemHeight
+      );
+      const rowsToRender = rowsInView + overscanRowsBefore + overscanRows;
+      const itemsVisible = rowsToRender * columns;
 
-      setItemsVisible(visibleRows * columns);
+      setItemsVisible(itemsVisible);
       setItemsOffset(offsetRows * columns);
+
+      const firstVisibleIndex = firstVisibleRow * columns;
+      const lastVisibleIndex = Math.min(
+        firstVisibleIndex + rowsInView * columns,
+        items.length
+      );
+
+      return {
+        firstVisibleIndex,
+        lastVisibleIndex,
+      };
+    } else {
+      return {
+        firstVisibleIndex: null,
+        lastVisibleIndex: null,
+      };
     }
   }, [itemHeight, containerWidth, containerHeight, columns, overscanRows]);
+
+  const handleScroll = useCallback(() => {
+    const { firstVisibleIndex, lastVisibleIndex } = updateItemVisibility();
+
+    if (onScroll) {
+      onScroll({
+        firstVisibleIndex,
+        lastVisibleIndex,
+      });
+    }
+  }, [updateItemVisibility]);
 
   useLayoutEffect(() => {
     styleCache.current = {};
     updateItemVisibility();
 
-    window.addEventListener(
-      'scroll',
-      updateItemVisibility,
-      supportsPassive ? { passive: true } : false
-    );
+    const options = supportsPassive ? { passive: true } : false;
+
+    window.addEventListener('scroll', handleScroll, options);
     return () =>
-      (window as any).removeEventListener(
+      window.removeEventListener(
         'scroll',
-        updateItemVisibility,
-        supportsPassive ? { passive: true } : false
+        handleScroll,
+        options as EventListenerOptions
       );
   }, [updateItemVisibility]);
-
-  const styles = useRef<StyleCache>({});
 
   const itemsToRender = useMemo(() => {
     let out = [];
@@ -156,7 +190,7 @@ export function SnappyReactGrid({
           item={item}
           style={stylesForItem({
             index,
-            cache: styles.current,
+            cache: styleCache.current,
             row,
             column,
             columns,
@@ -177,7 +211,7 @@ export function SnappyReactGrid({
         }
       : {
           position: 'relative' as 'relative',
-          height: (items.length * itemHeight) / columns,
+          height: Math.ceil(items.length / columns) * itemHeight,
         };
 
   return (
