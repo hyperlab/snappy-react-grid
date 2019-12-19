@@ -203,7 +203,7 @@ export function SnappyReactGrid({
             columns,
             itemHeight,
           })}
-          innerRef={index === 0 ? itemRef : null}
+          innerRef={index === itemsOffset ? itemRef : null}
         />
       );
     }

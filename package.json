@@ -41,6 +41,6 @@
     "typescript": "^3.7.3"
   },
   "dependencies": {
-    "use-resize-observer": "^5.0.0"
+    "use-resize-observer": "hyperlab/use-resize-observer#875ee3ee7ba1bc3b2d06d7f78316028608a25a41"
   }
 }

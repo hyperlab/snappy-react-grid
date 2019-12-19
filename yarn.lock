@@ -5701,10 +5701,9 @@ urix@^0.1.0:
   resolved "https://registry.yarnpkg.com/urix/-/urix-0.1.0.tgz#da937f7a62e21fec1fd18d49b35c2935067a6c72"
   integrity sha1-2pN/emLiH+wf0Y1Js1wpNQZ6bHI=
 
-use-resize-observer@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/use-resize-observer/-/use-resize-observer-5.0.0.tgz#2c1a1643bf0891ca094163c60ad0b08948540ec3"
-  integrity sha512-mQGibkHUeXW6iAog7wCv5UduAxWA8CTmhu54Z3s5IMPafvYhFJDRUzj36/9JrybFJ86HeIPZsV58ZhSghQJF/Q==
+use-resize-observer@hyperlab/use-resize-observer#875ee3ee7ba1bc3b2d06d7f78316028608a25a41:
+  version "5.1.0"
+  resolved "https://codeload.github.com/hyperlab/use-resize-observer/tar.gz/875ee3ee7ba1bc3b2d06d7f78316028608a25a41"
   dependencies:
     resize-observer-polyfill "^1.5.1"
 
