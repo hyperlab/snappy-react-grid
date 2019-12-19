@@ -146,7 +146,14 @@ export function SnappyReactGrid({
         lastVisibleIndex: null,
       };
     }
-  }, [itemHeight, containerWidth, containerHeight, columns, overscanRows]);
+  }, [
+    itemHeight,
+    containerWidth,
+    containerHeight,
+    columns,
+    overscanRows,
+    items.length,
+  ]);
 
   const handleScroll = useCallback(() => {
     const { firstVisibleIndex, lastVisibleIndex } = updateItemVisibility();
@@ -157,7 +164,7 @@ export function SnappyReactGrid({
         lastVisibleIndex,
       });
     }
-  }, [updateItemVisibility]);
+  }, [updateItemVisibility, onScroll]);
 
   useLayoutEffect(() => {
     styleCache.current = {};
@@ -172,7 +179,7 @@ export function SnappyReactGrid({
         handleScroll,
         options as EventListenerOptions
       );
-  }, [updateItemVisibility]);
+  }, [updateItemVisibility, handleScroll]);
 
   const itemsToRender = useMemo(() => {
     let out = [];
