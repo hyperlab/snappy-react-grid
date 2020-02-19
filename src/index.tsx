@@ -114,7 +114,7 @@ export function SnappyReactGrid({
       containerRef.current
     ) {
       const fullHeight = window.innerHeight;
-      const { top } = containerRef.current.getBoundingClientRect();
+      const { top, bottom } = containerRef.current.getBoundingClientRect();
 
       const firstVisibleRow = Math.floor(Math.max(-top, 0) / itemHeight);
       const offsetRows = Math.max(0, firstVisibleRow - overscanRows);
@@ -122,7 +122,8 @@ export function SnappyReactGrid({
       const overscanRowsBefore = Math.min(overscanRows, firstVisibleRow);
 
       const rowsInView = Math.ceil(
-        (fullHeight - Math.max(top, 0)) / itemHeight
+        (fullHeight - Math.max(top, 0) + Math.min(bottom - fullHeight, 0)) /
+          itemHeight
       );
       const rowsToRender = rowsInView + overscanRowsBefore + overscanRows;
       const itemsVisible = rowsToRender * columns;
@@ -130,10 +131,13 @@ export function SnappyReactGrid({
       setItemsVisible(itemsVisible);
       setItemsOffset(offsetRows * columns);
 
-      const firstVisibleIndex = firstVisibleRow * columns;
+      const firstVisibleIndex = Math.min(
+        firstVisibleRow * columns,
+        items.length - 1
+      );
       const lastVisibleIndex = Math.min(
         firstVisibleIndex + rowsInView * columns,
-        items.length
+        items.length - 1
       );
 
       return {
