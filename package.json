@@ -6,6 +6,13 @@
   "main": "dist/index.js",
   "module": "dist/snappy-react-grid.esm.js",
   "typings": "dist/index.d.ts",
+  "keywords": [
+    "window",
+    "windowing",
+    "grid",
+    "react",
+    "snappy"
+  ],
   "files": [
     "dist"
   ],
