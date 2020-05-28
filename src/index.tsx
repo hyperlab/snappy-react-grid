@@ -69,6 +69,7 @@ function stylesForItem({
       left: `${column * (100 / columns)}%`,
       top: `${row * itemHeight}px`,
       width: 100 / columns + '%',
+      height: `${itemHeight}px`,
     };
   } else {
     cache[index] = { width: 100 / columns + '%' };
