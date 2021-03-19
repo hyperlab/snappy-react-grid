@@ -1,6 +1,6 @@
 {
   "name": "snappy-react-grid",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "Alfred Ringstad, Jonatan Svennberg",
   "main": "dist/index.js",

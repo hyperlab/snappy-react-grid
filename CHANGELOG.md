@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0] - 2020-5-28
+## [0.3.0] - 2021-03-19
+
+### Changed
+
+- Add `id` prop to be able to use snappy-react-grid multiple times on the same site, but with different item heights. The item height is persisted in a global variable, but now you can specify an ID to identify this specific grid and not conflict with the persisted item height from other grids.
+
+## [0.2.0] - 2020-05-28
 
 ### Changed
 

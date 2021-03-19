@@ -22,6 +22,7 @@ interface ScrollHandlerArgs {
 }
 
 interface SnappyReactGridProps {
+  id?: string;
   items: any[];
   component: ComponentType<RenderComponentProps>;
   overscanRows?: number;
@@ -78,9 +79,10 @@ function stylesForItem({
   return cache[index];
 }
 
-let lastKnownHeight: number | null = null;
+const lastKnownHeights = {} as Record<string, number | null>;
 
 export function SnappyReactGrid({
+  id = 'default',
   items,
   component: RenderComponent,
   defaultVisible = 16,
@@ -102,8 +104,8 @@ export function SnappyReactGrid({
     ref: itemRef,
   });
 
-  if (currentItemHeight > 1) lastKnownHeight = currentItemHeight;
-  const itemHeight = lastKnownHeight;
+  if (currentItemHeight > 1) lastKnownHeights[id] = currentItemHeight;
+  const itemHeight = lastKnownHeights[id] || null;
 
   const styleCache = useRef<StyleCache>({});
 
