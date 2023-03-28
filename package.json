@@ -48,6 +48,6 @@
     "typescript": "^3.7.3"
   },
   "dependencies": {
-    "use-resize-observer": "hyperlab/use-resize-observer#875ee3ee7ba1bc3b2d06d7f78316028608a25a41"
+    "use-resize-observer": "9.1.0"
   }
 }
